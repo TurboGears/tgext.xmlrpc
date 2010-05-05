@@ -21,9 +21,9 @@ base_config = TestConfig(folder = 'rendering',
                                    'use_toscawidgets2': False,
                                    'full_stack': False,
                                    'pylons.helpers': Bunch(),
-                                   'renderers': ['json'],
+                                   'renderers': ['genshi'],
                                    'use_legacy_renderer': False,
-                                   'default_renderer':'json',
+                                   'default_renderer':'genshi',
                                    'use_dotted_templatenames': True,
                                    'paths':paths,
                                    'package':tgext.xmlrpc.test,
@@ -52,7 +52,8 @@ class TestXmlRpcController:
 
     def test_xmlrpc_correct_argcount(self):
         resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'addit'))
-        assert 'goodbye' in resp, resp
+        resp = xmlrpclib.loads(resp.body)
+        assert resp[0][0] == 3, resp
         
     def test_bad_xmlrpc_call(self):
         try:

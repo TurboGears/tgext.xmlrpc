@@ -8,26 +8,14 @@ import urllib
 
 from decorator import decorator
 
+from pylons import config
+
 from tg import request, response, expose
 from tg.controllers import TGController
 from tg.decorators import Decoration
 
 class InvalidXmlRpcType(Exception):
     pass
-
-#def xmlrpc(signatures, helpstr=""):
-    #def call(func, *p, **kw):
-        #response.content_type="text/xml"
-        #try:
-            #parms, method = xmlrpclib.loads(request.body)
-        #except:
-            #parms, method = xmlrpclib.loads(urllib.unquote_plus(request.body))
-        #return xmlrpclib.dumps(func(p[0], *parms))
-    #deco = decorator(call)
-    #Decoration.get_decoration(deco)
-    #deco.signatures = signatures
-    #deco.helpstr = helpstr
-    #return deco
 
 class xmlrpc(object):
     def __init__(self, signatures, helpstr=""):
@@ -36,19 +24,22 @@ class xmlrpc(object):
         
     def __call__(self, func):
         deco = decorator(self.wrap, func)
-        Decoration.get_decoration(deco)
+        exposed = Decoration.get_decoration(deco)
         deco.signatures = self.signatures
         deco.helpstr = self.helpstr
+        exposed.register_template_engine(\
+            'text/xml', config.get('renderers', [''])[0],
+            '', [])
         return deco
     
     def wrap(self, func, *p, **kw):
-        response.headers['Content-Type'] = "text/xml"
+        #response.content_type = "text/xml"
         try:
             parms, method = xmlrpclib.loads(request.body)
         except:
             parms, method = xmlrpclib.loads(urllib.unquote_plus(request.body))
-        x=func(p[0], *parms)
-        return xmlrpclib.dumps(x)
+        rpcresponse=func(p[0], *parms)
+        return xmlrpclib.dumps((rpcresponse,), methodresponse=1)
         # TODO: wrap func such that the content-type will always be set
         # properly, and the xml dump will always happen automatically
         
@@ -84,7 +75,7 @@ class XmlRpcController(TGController):
                 return self._dispatch_first_found_default_or_lookup(state, remainder)
         else:
             method = getattr(state.controller, mvals[0], None)
-            if method:# and getattr(method, 'signatures', None) is not None:
+            if method and getattr(method, 'signatures', None) is not None:
                 state.add_method(method, [])
                 return state
             # TODO: Finish here. Need to set state/remainder properly to handle the existing method, or 404 if it doesn't exist/isn't exposed

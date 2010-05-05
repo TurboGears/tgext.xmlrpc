@@ -7,10 +7,10 @@ from repoze.what.predicates import Not, is_anonymous, has_permission
 class TestRpcController(XmlRpcController):
     @xmlrpc([])
     def addit(self, *p, **kw):
-        return []
+        return sum(p)
     
-    def sumit(self, p1, p2):
-        return p1+p2
+    def sumit(self, *p, **kw):
+        return sum(p)
     
 class RootController(TGController):
     @expose()
