@@ -49,7 +49,7 @@ class TestXmlRpcController:
             else:
                 raise
     def test_xmlrpc_correct_argcount(self):
-        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'tg.xmlrpc.addit'))
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'addit'))
         assert 'goodbye' in resp, resp
         
 # tests to write:
