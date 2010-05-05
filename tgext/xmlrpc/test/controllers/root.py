@@ -6,7 +6,7 @@ from repoze.what.predicates import Not, is_anonymous, has_permission
 
 class TestRpcController(XmlRpcController):
     @xmlrpc([])
-    def addit(self, p1, p2, *p, **kw):
+    def addit(self, *p, **kw):
         return []
     
     def sumit(self, p1, p2):

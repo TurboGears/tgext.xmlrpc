@@ -15,6 +15,20 @@ from tg.decorators import Decoration
 class InvalidXmlRpcType(Exception):
     pass
 
+#def xmlrpc(signatures, helpstr=""):
+    #def call(func, *p, **kw):
+        #response.content_type="text/xml"
+        #try:
+            #parms, method = xmlrpclib.loads(request.body)
+        #except:
+            #parms, method = xmlrpclib.loads(urllib.unquote_plus(request.body))
+        #return xmlrpclib.dumps(func(p[0], *parms))
+    #deco = decorator(call)
+    #Decoration.get_decoration(deco)
+    #deco.signatures = signatures
+    #deco.helpstr = helpstr
+    #return deco
+
 class xmlrpc(object):
     def __init__(self, signatures, helpstr=""):
         self.signatures = signatures
@@ -23,13 +37,12 @@ class xmlrpc(object):
     def __call__(self, func):
         deco = decorator(self.wrap, func)
         Decoration.get_decoration(deco)
-        func.signatures = self.signatures
-        func.helpstr = self.helpstr
-        self.func = func
+        deco.signatures = self.signatures
+        deco.helpstr = self.helpstr
         return deco
     
     def wrap(self, func, *p, **kw):
-        #response.content_type="text/xml"
+        response.headers['Content-Type'] = "text/xml"
         try:
             parms, method = xmlrpclib.loads(request.body)
         except:
@@ -71,7 +84,7 @@ class XmlRpcController(TGController):
                 return self._dispatch_first_found_default_or_lookup(state, remainder)
         else:
             method = getattr(state.controller, mvals[0], None)
-            if method and getattr(method, 'signatures', None):
+            if method:# and getattr(method, 'signatures', None) is not None:
                 state.add_method(method, [])
                 return state
             # TODO: Finish here. Need to set state/remainder properly to handle the existing method, or 404 if it doesn't exist/isn't exposed
