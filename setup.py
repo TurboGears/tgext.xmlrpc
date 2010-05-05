@@ -15,6 +15,7 @@ setup(
     url='http://bitbucker.org/pedersen/tgext.xmlrpc',
     install_requires=[
         "TurboGears2 >= 2.1b2",
+        "decorator",
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],

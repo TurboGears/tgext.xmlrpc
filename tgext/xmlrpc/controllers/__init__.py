@@ -6,8 +6,11 @@ __all__ = ['XmlRpcController', 'xmlrpc', 'InvalidXmlRpcType']
 import xmlrpclib
 import urllib
 
+from decorator import decorator
+
 from tg import request, response, expose
 from tg.controllers import TGController
+from tg.decorators import Decoration
 
 class InvalidXmlRpcType(Exception):
     pass
@@ -18,15 +21,23 @@ class xmlrpc(object):
         self.helpstr = helpstr
         
     def __call__(self, func):
+        deco = decorator(self.wrap, func)
+        Decoration.get_decoration(deco)
         func.signatures = self.signatures
         func.helpstr = self.helpstr
         self.func = func
-        return self.wrap
+        return deco
     
-    def wrap(self, *p, **kw):
-        response.content_type="text/xml"
-        return xmlrpclib.dumps(self.func(*p, **kw))
-        # TODO: wrap func such that the content-type will always be set properly, and the xml dump will always happen automatically
+    def wrap(self, func, *p, **kw):
+        #response.content_type="text/xml"
+        try:
+            parms, method = xmlrpclib.loads(request.body)
+        except:
+            parms, method = xmlrpclib.loads(urllib.unquote_plus(request.body))
+        x=func(p[0], *parms)
+        return xmlrpclib.dumps(x)
+        # TODO: wrap func such that the content-type will always be set
+        # properly, and the xml dump will always happen automatically
         
 class XmlRpcController(TGController):
     @expose()
@@ -60,12 +71,8 @@ class XmlRpcController(TGController):
                 return self._dispatch_first_found_default_or_lookup(state, remainder)
         else:
             method = getattr(state.controller, mvals[0], None)
-            if method:
+            if method and getattr(method, 'signatures', None):
                 state.add_method(method, [])
                 return state
             # TODO: Finish here. Need to set state/remainder properly to handle the existing method, or 404 if it doesn't exist/isn't exposed
-        return "goodbye cruel world"
-    
-    def _perform_call(self, controller, params, remainder=None):
-        remainder = remainder or []
-        return controller(*remainder, **dict(params))
+        return self._dispatch_first_found_default_or_lookup(state, remainder)

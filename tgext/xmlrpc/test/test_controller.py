@@ -45,12 +45,25 @@ class TestXmlRpcController:
             resp = self.app.get('/xmlrpc/myurl/what')
         except Exception, e:
             if '404 Not Found' in str(e):
-                pass
+                return
             else:
                 raise
+        assert 1==0, "too many args passed, and it should not have"
+
     def test_xmlrpc_correct_argcount(self):
         resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'addit'))
         assert 'goodbye' in resp, resp
+        
+    def test_bad_xmlrpc_call(self):
+        try:
+            resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'sumit'))
+        except Exception, e:
+            if '404 Not Found' in str(e):
+                return
+            else:
+                raise
+        assert 1==0, "bad xmlrpc call passed, and it should not have"
+        
         
 # tests to write:
 # url continues past current location of xmlrpc controller
