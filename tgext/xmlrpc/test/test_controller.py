@@ -1,4 +1,6 @@
 import os, sys
+import xmlrpclib
+
 from pylons import config
 from tg.test_stack import TestConfig, app_from_config
 from tg.util import Bunch
@@ -38,4 +40,18 @@ class TestXmlRpcController:
         resp = self.app.get('/')
         assert 'hello world' in resp, resp
         
-    
+    def test_xmlrpc_too_many_args(self):
+        try:
+            resp = self.app.get('/xmlrpc/myurl/what')
+        except Exception, e:
+            if '404 Not Found' in str(e):
+                pass
+            else:
+                raise
+    def test_xmlrpc_correct_argcount(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'tg.xmlrpc.addit'))
+        assert 'goodbye' in resp, resp
+        
+# tests to write:
+# url continues past current location of xmlrpc controller
+# url stops at current xmlrpc controller
