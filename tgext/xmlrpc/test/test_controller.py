@@ -40,6 +40,16 @@ class TestXmlRpcController:
         resp = self.app.get('/')
         assert 'hello world' in resp, resp
         
+    def test_xmlrpc_correct_argcount(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'addit'))
+        resp = xmlrpclib.loads(resp.body)
+        assert resp[0][0] == 3, resp
+
+    def test_subrpc(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps(("hello","world","i","mean","it"), 'subrpc.joinit'))
+        resp = xmlrpclib.loads(resp.body)
+        assert resp[0][0] == 'hello world i mean it', resp
+        
     def test_xmlrpc_too_many_args(self):
         try:
             resp = self.app.get('/xmlrpc/myurl/what')
@@ -50,22 +60,15 @@ class TestXmlRpcController:
                 raise
         assert 1==0, "too many args passed, and it should not have"
 
-    def test_xmlrpc_correct_argcount(self):
-        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'addit'))
-        resp = xmlrpclib.loads(resp.body)
-        assert resp[0][0] == 3, resp
-        
     def test_bad_xmlrpc_call(self):
-        try:
-            resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'sumit'))
-        except Exception, e:
-            if '404 Not Found' in str(e):
-                return
-            else:
-                raise
-        assert 1==0, "bad xmlrpc call passed, and it should not have"
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'sumit'))
+        assert 'Invalid XMLRPC Method' in resp, resp
+
+    def test_bad_xml_post(self):
+        resp = self.app.post('/xmlrpc', 'hello <world "/">')
+        assert 'Unable to decode request body' in resp, resp
+    
+    def test_genfault(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'genfault'))
+        assert '<name>faultCode</name>' in resp, resp
         
-        
-# tests to write:
-# url continues past current location of xmlrpc controller
-# url stops at current xmlrpc controller
