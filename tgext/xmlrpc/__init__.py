@@ -1,3 +1,3 @@
-from tgext.xmlrpc.controllers import XmlRpcController, xmlrpc, InvalidXmlRpcType
+from tgext.xmlrpc.controllers import XmlRpcController, xmlrpc
 
-__all__ = ['XmlRpcController', 'xmlrpc', 'InvalidXmlRpcType']
+__all__ = ['XmlRpcController', 'xmlrpc']

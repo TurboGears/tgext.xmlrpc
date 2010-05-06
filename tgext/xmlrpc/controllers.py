@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Controllers for the tgext.xmlrpc application."""
 
-__all__ = ['XmlRpcController', 'xmlrpc', 'InvalidXmlRpcType']
+__all__ = ['XmlRpcController', 'xmlrpc']
 
 import xmlrpclib
 import urllib
@@ -13,9 +13,6 @@ from pylons import config
 from tg import request, response, expose
 from tg.controllers import TGController
 from tg.decorators import Decoration
-
-class InvalidXmlRpcType(Exception):
-    pass
 
 class xmlrpc(object):
     def __init__(self, signatures, helpstr=""):
