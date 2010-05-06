@@ -40,6 +40,16 @@ class TestXmlRpcController:
         resp = self.app.get('/')
         assert 'hello world' in resp, resp
         
+    def test_helppage(self):
+        resp = self.app.get('/xmlrpc')
+        assert 'Help String' in resp, resp
+        assert 'Method Signature' in resp, resp
+        assert 'Returns' in resp, resp
+        assert 'Parameters' in resp, resp
+        assert 'addit' in resp, resp
+        assert 'genfault' in resp, resp
+        assert 'subrpc.joinit' in resp, resp
+    
     def test_xmlrpc_correct_argcount(self):
         resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'addit'))
         resp = xmlrpclib.loads(resp.body)

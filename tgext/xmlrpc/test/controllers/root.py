@@ -5,18 +5,18 @@ from tgext.xmlrpc import XmlRpcController, xmlrpc
 from repoze.what.predicates import Not, is_anonymous, has_permission
 
 class TestRpcSubController(XmlRpcController):
-    @xmlrpc([], helpstr='joins an array of strings with spaces')
+    @xmlrpc([['string', 'array']], helpstr='joins an array of strings with spaces')
     def joinit(self, *p, **kw):
         return " ".join(p)
     
 class TestRpcController(XmlRpcController):
     subrpc = TestRpcSubController()
     
-    @xmlrpc(['int', 'array'], helpstr='sums an array of numbers')
+    @xmlrpc([['int', 'array']], helpstr='sums an array of numbers')
     def addit(self, *p, **kw):
         return sum(p)
     
-    @xmlrpc([])
+    @xmlrpc([['fault', 'none'], ['fault', 'int', 'string', 'struct', 'array']])
     def genfault(self, *p, **kw):
         1/0
         

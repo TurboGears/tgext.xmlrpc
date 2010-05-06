@@ -48,7 +48,23 @@ class xmlrpc(object):
 class XmlRpcController(TGController):
     @expose()
     def index(self):
-        return "hello world"
+        header = '<html>\n<head>\n<title>XMLRPC Index Page</title>\n'
+        style = '<style type="text/css">dt {font-weight:bold}</style>\n</head>\n</body>\n<dl>\n'
+        footer = '</dl>\n</body>\n</html>\n'
+        dlent = []
+        for method in self._gather_all_methods('', self):
+            dlent.append('<dt>%s</dt>\n<dd>\n<dl>\n' % (method))
+            kall = self._find_method(method)
+            dlent.append('<dt>Help String:</dt>\n<dd>%s</dd>\n' % (kall.helpstr))
+            for sig in kall.signatures:
+                retval = sig[:1]
+                parms = sig[1:]
+                dlent.append('<dt>Method Signature</dt>\n<dd>\n<dl>\n')
+                dlent.append('<dt>Returns:</dt>\n<dd>%s</dd>\n' % (retval))
+                dlent.append('<dt>Parameters:</dt>\n<dd>%s</dd>\n' % (parms))
+                dlent.append('</dl>\n</dd>\n')
+            dlent.append('</dl>\n')
+        return "%s%s%s%s" % (header, style, ''.join(dlent), footer)
     
     @expose(content_type='text/xml')
     def rpcfault(self, *p, **kw):
@@ -106,6 +122,10 @@ class XmlRpcController(TGController):
     def _dispatch(self, state, remainder, parms=None, method=None):
         if remainder:
             return self._dispatch_first_found_default_or_lookup(state, remainder)
+        
+        if request.method.lower() == 'get':
+            state.add_method(self.index, [])
+            return state
         
         if not parms and not method:
             try:
