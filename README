@@ -7,6 +7,7 @@ performed by your TurboGears application.
 
 1. Add it to your project. This is accomplished by modifying your
 setup.py. Add "tgext.xmlrpc" to your **install_requires** list.
+
 2. Run {{{python setup.py develop}}} in your project to get it
 installed.
 
@@ -60,7 +61,7 @@ So, examples of valid/invalid signatures:
 
 Due to a quirk of the way in which the internals work, the only
 reliable way to pass the parameters to the decorated methods is via
-*p, like so:
+{{{*p}}}, like so:
 
 {{{
     class MyXml(XmlRpcController):
