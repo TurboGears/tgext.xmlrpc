@@ -8,7 +8,7 @@ except ImportError:
 
 setup(
     name='tgext.xmlrpc',
-    version='0.1',
+    version='0.6',
     description='TurboGears XMLRPC Controller',
     author='Michael J. Pedersen',
     author_email='m.pedersen@icelus.org',
