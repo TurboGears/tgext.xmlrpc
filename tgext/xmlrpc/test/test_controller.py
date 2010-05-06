@@ -50,6 +50,35 @@ class TestXmlRpcController:
         resp = xmlrpclib.loads(resp.body)
         assert resp[0][0] == 'hello world i mean it', resp
         
+    def test_system_listmethods(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps(('addit',), 'system.listMethods'))
+        assert 'addit' in resp, resp
+        assert 'genfault' in resp, resp
+        assert 'subrpc.joinit' in resp, resp
+    
+    def test_system_methodsignature(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps(('addit',), 'system.methodSignature'))
+        assert 'int' in resp, resp
+        assert 'string' in resp, resp
+    
+    def test_system_methodhelp(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps(('addit',), 'system.methodHelp'))
+        assert 'sums an array of numbers' in resp, resp
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps(('subrpc.joinit',), 'system.methodHelp'))
+        assert 'joins an array of strings with spaces' in resp, resp
+        
+    def test_system_methodsignature_bad(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps(('subrpc.nonexistant',), 'system.methodSignature'))
+        assert 'Invalid method' in resp, resp
+
+    def test_system_methodhelp_bad(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps(('subrpc.nonexistant',), 'system.methodHelp'))
+        assert 'Invalid method' in resp, resp
+    
+    def test_system_badcall(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((), 'system.badcall'))
+        assert 'Invalid system method called' in resp, resp
+        
     def test_xmlrpc_too_many_args(self):
         try:
             resp = self.app.get('/xmlrpc/myurl/what')

@@ -54,6 +54,55 @@ class XmlRpcController(TGController):
     def rpcfault(self, *p, **kw):
         return xmlrpclib.dumps(xmlrpclib.Fault(1, p[0]))
     
+    @expose(content_type='text/xml')
+    def _system_methodHelp(self, *p, **kw):
+        try:
+            method = self._find_method(p[0])
+            rpcresponse = xmlrpclib.dumps((method.helpstr,), methodresponse=1)
+        except:
+            rpcresponse = xmlrpclib.dumps(('Invalid method',), methodresponse=1)
+        return rpcresponse
+    
+    @expose(content_type='text/xml')
+    def _system_methodSignature(self, *p, **kw):
+        try:
+            method = self._find_method(p[0])
+            rpcresponse = xmlrpclib.dumps((method.signatures,), methodresponse=1)
+        except:
+            rpcresponse = xmlrpclib.dumps(('Invalid method',), methodresponse=1)
+        return rpcresponse
+    
+    @expose(content_type='text/xml')
+    def _system_listMethods(self, *p, **kw):
+        methods = self._gather_all_methods('', self)
+        return xmlrpclib.dumps((methods,), methodresponse=1)
+            
+    def _gather_all_methods(self, prefix, controller):
+        methods = []
+        if prefix != '':
+            prefix = prefix + '.'
+        for attrname in dir(controller):
+            attr = getattr(controller, attrname)
+            if hasattr(attr, 'signatures'):
+                methods.append('%s%s' % (prefix, attrname))
+            if isinstance(attr, XmlRpcController):
+                methods.extend(self._gather_all_methods(prefix + attrname, attr))
+        return methods
+        
+    def _find_method(self, method):
+        mvals = method.split('.')
+        midx = 0
+        controller = self
+        result = None
+        while not result and controller and midx < len(mvals):
+            controller = getattr(controller, mvals[midx], None)
+            if controller is None:
+                break
+            if midx == len(mvals)-1:
+                result = controller
+            midx = midx + 1
+        return result
+    
     def _dispatch(self, state, remainder, parms=None, method=None):
         if remainder:
             return self._dispatch_first_found_default_or_lookup(state, remainder)
@@ -68,7 +117,14 @@ class XmlRpcController(TGController):
                     state.add_method(self.rpcfault, ['Unable to decode request body "||%s||"' % (request.body)])
                     return state
             
-        # TODO: Check for special methods (help/etc) and return them when appropriate
+        if method.startswith('system.'):
+            methodname = '_%s' % (method.replace('.', '_'))
+            if not getattr(self, methodname, None):
+                state.add_method(self.rpcfault, ['Invalid system method called: %s' % (method)])
+            else:
+                state.add_method(getattr(self, methodname), parms)
+            return state
+
         mvals = method.split('.')
         if len(mvals) > 1:
             subcon = getattr(self, mvals[0], None)
