@@ -1,0 +1,110 @@
+== Welcome to the TurboGears XMLRPC Extension ==
+
+tgext.xmlrpc provides an easy method to allow XMLRPC calls to be
+performed by your TurboGears application.
+
+== Installation ==
+
+1. Add it to your project. This is accomplished by modifying your
+setup.py. Add "tgext.xmlrpc" to your **install_requires** list.
+2. Run {{{python setup.py develop}}} in your project to get it
+installed.
+
+== Usage ==
+
+Usage is quite simple. Create a controller, decorate the XMLRPC
+methods, and mount your controller somewhere. This can be done as
+follows:
+
+{{{
+from tgext.xmlrpc import XmlRpcController, xmlrpc
+
+class MyXmlRpcCenter(XmlRpcController):
+    @xmlrpc([['int', 'int', 'int'], ['int', 'array']], helpstr="Adds numbers together")
+    def addit(self, *p, **kw):
+        return sum(p)
+}}}
+
+And then, in your controller, add the following line:
+
+{{{
+      xmlrpc = MyXmlRpcCenter()
+}}}
+
+That's it, you now have a working XMLRPC interface on your system. If
+you added it to your RootController, you may visit
+http://localhost:8080/xmlrpc and get the help page. You may send an
+XMLRPC request to the method 'addit', and get the result.
+
+== The Details ==
+
+=== xmlrpc Decorator  ===
+
+The xmlrpc decorator takes two parameters:
+
+ * A list of lists of signatures
+ * A help string that will be displayed on the index page, or when
+   system.methodHelp is called for that method
+
+Note that it matters that the signatures are a list of lists. The
+elements of the list are nothing but strings identifying valid XMLRPC
+data types. You can view a list of acceptable data types at
+http://en.wikipedia.org/wiki/XML-RPC
+
+So, examples of valid/invalid signatures:
+
+ * {{{[['string', 'int]]}}} <-- valid, takes int, returns string
+ * {{{['string', 'int']}}} <-- invalid, a list of two strings, not a list of lists
+
+=== xmlrpc methods ===
+
+Due to a quirk of the way in which the internals work, the only
+reliable way to pass the parameters to the decorated methods is via
+*p, like so:
+
+{{{
+    class MyXml(XmlRpcController):
+	@xmlrpc([['string', 'string']])
+	def mymethod(self, *p, **kw):
+	    pass
+}}}
+
+The reason for this is because I was only able to have the dispatch
+mechanism call with either bad parameters (all parameters must be
+strings, or it fails), or an incorrect number of parameters. I would
+love a patch for this, as I don't expect to have time to fix this any
+time soon. In the meantime, the list "p" contains the parameters, passed by
+position, and is at least usable for getting all data from the call.
+
+Note that you do not have to worry about decoding the XML, or encoding
+it on the way out. tgext.xmlrpc handles that for you.
+
+=== XMLRPC Hierarchies ===
+
+You may set up a hierarchy of XmlRpcControllers. When you do, the
+method names get separated by ".". This results in situations like the
+following:
+
+{{{
+class SubXmlRpc(XmlRpcController):
+      @xmlrpc([['string', 'array']])
+      def joinit(self, *p, **kw):
+      	  return " ".join(p)
+
+class MyXmlRpc(XmlRpcController):
+      subproc = SubXmlRpc()
+
+      @xmlrpc([['int', 'array']])
+      def addit(self, *p, **kw):
+      	  return sum(p)
+}}}
+
+When you mount MyXmlRpc somewhere, you will have the following two
+method names available to you:
+
+ * addit
+ * subproc.joinit
+
+When a call is made for "subproc.joinit", the XmlRpcController will
+descend looking for the sub-controller, and then call the appropriate
+method there.
