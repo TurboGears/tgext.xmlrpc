@@ -54,7 +54,7 @@ http://en.wikipedia.org/wiki/XML-RPC
 
 So, examples of valid/invalid signatures:
 
- * {{{[['string', 'int]]}}} <-- valid, takes int, returns string
+ * {{{[['string', 'int']]}}} <-- valid, takes int, returns string
  * {{{['string', 'int']}}} <-- invalid, a list of two strings, not a list of lists
 
 === xmlrpc methods ===
