@@ -55,6 +55,11 @@ class TestXmlRpcController:
         resp = xmlrpclib.loads(resp.body)
         assert resp[0][0] == 3, resp
 
+    def test_xmlrpc_sumthem(self):
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((1,2), 'sumthem'))
+        resp = xmlrpclib.loads(resp.body)
+        assert resp[0][0] == 3, resp
+
     def test_subrpc(self):
         resp = self.app.post('/xmlrpc', xmlrpclib.dumps(("hello","world","i","mean","it"), 'subrpc.joinit'))
         resp = xmlrpclib.loads(resp.body)

@@ -16,6 +16,10 @@ class TestRpcController(XmlRpcController):
     def addit(self, *p, **kw):
         return sum(p)
     
+    @xmlrpc([['int', 'array']], helpstr='sums two numbers')
+    def sumthem(self, num1, num2, *p, **kw):
+        return num1+num2
+    
     @xmlrpc([['fault', 'none'], ['fault', 'int', 'string', 'struct', 'array']])
     def genfault(self, *p, **kw):
         1/0
