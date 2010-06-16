@@ -112,3 +112,8 @@ method names available to you:
 When a call is made for "subproc.joinit", the XmlRpcController will
 descend looking for the sub-controller, and then call the appropriate
 method there.
+
+=== To Do List ===
+
+ * Add xmlrpcstruct decorator to allow xmlrpcsruct docs to be shown on
+   system.methodHelp pages.
