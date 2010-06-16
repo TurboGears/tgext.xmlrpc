@@ -59,26 +59,29 @@ So, examples of valid/invalid signatures:
 
 === xmlrpc methods ===
 
-Due to a quirk of the way in which the internals work, the only
-reliable way to pass the parameters to the decorated methods is via
-{{{*p}}}, like so:
+You may write up your methods so that they function just like any other
+TurboGears method. In fact, you can even be more strict, as a common idiom for
+TurboGears methods is to use something like this:
 
 {{{
     class MyXml(XmlRpcController):
-	@xmlrpc([['string', 'string']])
+        @xmlrpc([['string', 'string']])
 	def mymethod(self, *p, **kw):
 	    pass
 }}}
 
-The reason for this is because I was only able to have the dispatch
-mechanism call with either bad parameters (all parameters must be
-strings, or it fails), or an incorrect number of parameters. I would
-love a patch for this, as I don't expect to have time to fix this any
-time soon. In the meantime, the list "p" contains the parameters, passed by
-position, and is at least usable for getting all data from the call.
+Notice the {{{*p, **kw}}} in the method signature. This is to prevent an ugly
+error page being sent to users if they get the URL wrong. Since we are dealing
+with programmatic interfaces, where the other end should be coded to expect
+errors when data is not sent properly, we can make things much easier on the
+developer:
 
-Note that you do not have to worry about decoding the XML, or encoding
-it on the way out. tgext.xmlrpc handles that for you.
+{{{
+    class MyXml(XmlRpcController):
+        @xmlrpc([['string', 'string']])
+	def mymethod(self, instr, **kw):
+	    pass
+}}}
 
 === XMLRPC Hierarchies ===
 
