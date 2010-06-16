@@ -66,7 +66,7 @@ class TestXmlRpcController:
         assert resp[0][0] == 'hello world i mean it', resp
         
     def test_system_listmethods(self):
-        resp = self.app.post('/xmlrpc', xmlrpclib.dumps(('addit',), 'system.listMethods'))
+        resp = self.app.post('/xmlrpc', xmlrpclib.dumps((), 'system.listMethods'))
         assert 'addit' in resp, resp
         assert 'genfault' in resp, resp
         assert 'subrpc.joinit' in resp, resp
