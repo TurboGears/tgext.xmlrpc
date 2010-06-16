@@ -157,6 +157,7 @@ class XmlRpcController(TGController):
             if method:
                 if getattr(method, 'signatures', None) is not None:
                     state.add_method(method, [])
+                    state.remainder = ['' for x in parms]
                     return state
                 else:
                     state.add_method(self.rpcfault, ['Invalid XMLRPC Method'])
