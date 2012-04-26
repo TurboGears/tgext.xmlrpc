@@ -26,7 +26,7 @@ class xmlrpc(object):
         deco.helpstr = self.helpstr
         exposed.register_template_engine(\
             'text/xml', config.get('default_renderer', ['mako'])[0],
-            '', [])
+            '', [], {})
         return deco
     
     def wrap(self, func, *p, **kw):
@@ -157,7 +157,7 @@ class XmlRpcController(TGController):
             if method:
                 if getattr(method, 'signatures', None) is not None:
                     state.add_method(method, [])
-                    state.remainder = ['' for x in parms]
+                    state.remainder = [str(x) for x in parms]
                     return state
                 else:
                     state.add_method(self.rpcfault, ['Invalid XMLRPC Method'])

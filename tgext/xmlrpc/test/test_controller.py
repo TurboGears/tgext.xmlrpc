@@ -1,9 +1,9 @@
 import os, sys
 import xmlrpclib
 
-from pylons import config
-from tg.test_stack import TestConfig, app_from_config
+from tg.configuration import AppConfig, config
 from tg.util import Bunch
+from webtest import TestApp
 
 import tgext.xmlrpc.test
 
@@ -16,21 +16,33 @@ paths=Bunch(
             templates=os.path.join(root, 'templates')
             )
 
-base_config = TestConfig(folder = 'rendering',
-                         values = {'use_sqlalchemy': False,
-                                   'use_toscawidgets2': False,
-                                   'full_stack': False,
-                                   'pylons.helpers': Bunch(),
-                                   'renderers': ['genshi'],
-                                   'use_legacy_renderer': False,
-                                   'default_renderer':'genshi',
-                                   'use_dotted_templatenames': True,
-                                   'paths':paths,
-                                   'package':tgext.xmlrpc.test,
-                                   'beaker.session.secret': 'ChAnGeMe',
-                                   'beaker.session.key': 'tgext.xmlrpc.test',
-                                  }
-                         )
+base_config = AppConfig()
+base_config.update(
+    {'use_sqlalchemy': False,
+     'use_toscawidgets2': False,
+     'full_stack': False,
+     'pylons.helpers': Bunch(),
+     'renderers': ['genshi'],
+     'use_legacy_renderer': False,
+     'default_renderer':'genshi',
+     'use_dotted_templatenames': True,
+     'paths':paths,
+     'package':tgext.xmlrpc.test,
+     'beaker.session.secret': 'ChAnGeMe',
+     'beaker.session.key': 'tgext.xmlrpc.test',
+     }
+    )
+
+def app_from_config(base_config, deployment_config=None):
+    if not deployment_config:
+        deployment_config = {'debug': 'true',
+                             'error_email_from': 'paste@localhost',
+                             'smtp_server': 'localhost'}
+
+    env_loader = base_config.make_load_environment()
+    app_maker = base_config.setup_tg_wsgi_app(env_loader)
+    app = TestApp(app_maker(deployment_config, full_stack=True))
+    return app
 
 class TestXmlRpcController:
     def __init__(self):

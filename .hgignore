@@ -3,3 +3,6 @@ syntax:glob
 *.pyc
 *.wpu
 dist/*
+.coverage
+nosetests.xml
+
